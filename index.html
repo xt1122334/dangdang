@@ -1,10 +1,193 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="utf-8" />
+		<meta charset="UTF-8">
 		<title></title>
-	</head>
-	<body>
-		
-	</body>
+		<script src="jquery-1.11.3.js" type="text/javascript" charset="utf-8"></script>
+    <style type="text/css">
+    div {
+        width: 18px;
+        height: 18px;
+        float: left;
+        border: 1px solid #ccc;
+    }
+    
+    .out {
+       background: #969696;
+    }
+    
+    .in {
+        background: white;
+    }
+    
+    .snake {
+        background: deepskyblue;
+    }
+    
+    .food {
+        background: pink;
+    }
+    </style>
+</head>
+
+<body>
+    <div style="width:600px; height: 600px;" id="demo">
+    </div>
+    <script type="text/javascript">
+    	//跟着网上资源教程写的，我自己的写了一上午还在上下左右蹦跶，唉。。
+    var arryRoad = new Array();//创建食物数组
+    var arrSnake = new Array();//创建贪吃蛇数组
+
+    function bulid(num, outStyle, inStyle) {//创建地图（num：横向个数和纵向个数，但是我把宽高都固定了，改了就乱；outStyle：外墙样式，inStyle：内部方格样式）
+        for (var i = 1; i <= num * num; i++) {
+            if (i <= num - 1 || i > num * (num - 1)) {//判断是不是上下墙
+                $('<div class="' + outStyle + '"></div>').appendTo($('#demo'));//创建墙
+            } else if (i % num == 0 || i % num == 1) {//判断是不是两边墙
+                $('<div class="' + outStyle + '"></div>').appendTo($('#demo'));
+            } else {//剩下的都是路了
+                $('<div class="' + inStyle + '"></div>').appendTo($('#demo'));
+                arryRoad.push(i - 1);//此处，推到食物数组，为食物的随机出现铺路
+               
+            }
+        }
+    }
+
+
+    bulid(30, 'out', 'in');//穿参，固定的，因为上面说了我固定了宽高
+    arrSnake = [31];//让蛇从31格正常出现蹦跶
+    var snake = new Object();//东西多，用对象保存吧
+    snake.direction = 'right';//默认方向
+    snake.timmer = null;//自带定时器
+
+
+    function move(direction) {//动起来吧
+        var num = 0;
+        switch (direction) {
+            case 'left':
+                num = -1;
+                break;
+            case 'right':
+                num = 1;
+                break;
+            case 'up':
+                num = -30;//一行30格，下同
+                break;
+            case 'down':
+                num = 30;
+                break;
+        }
+        var zb = parseInt(arrSnake[0]) + num;
+        var itclassName = $('#demo').children().eq(zb).attr("class").toString();
+        if (itclassName == "out" || itclassName == 'snake') {
+
+            alert('You die');
+            clearInterval(snake.timmer);
+            return;//下一个点死亡条件判断
+        } else if (itclassName == 'food') {
+            $('#demo').children().eq(zb).removeClass(); 
+            $('#demo').children().eq(zb).addClass('snake'); //吧食物变成蛇
+            arrSnake.unshift(zb);
+            //console.log(arrSnake.length);
+            var indxofZb = arryRoad.indexOf(zb); 
+            arryRoad.splice(indxofZb, 1);//清除变成蛇的食物
+            food();
+            return;//跳出函数，下面的代码将不再执行
+        }
+
+
+        var lastzb = arrSnake[arrSnake.length - 1]; 
+        $('#demo').children().eq(zb).removeClass(); 
+        $('#demo').children().eq(zb).addClass('snake'); 
+
+        arrSnake.unshift(zb);
+
+        var indxofZb = arryRoad.indexOf(zb); 
+        arryRoad.splice(indxofZb, 1); 
+
+
+
+        $('#demo').children().eq(lastzb).removeClass(); 
+        $('#demo').children().eq(lastzb).addClass('in'); 
+        arrSnake.splice(arrSnake.length - 1, 1);
+        arryRoad.push(lastzb); 
+
+
+        
+
+
+
+    }
+
+
+    $(window).keydown(function(event) {//键盘控制
+        switch (event.keyCode) {
+            case 37:
+                if (snake.direction != 'right') {
+                    snake.direction = 'left';
+                }
+                break;
+
+               
+
+
+            case 38:
+
+                if (snake.direction != 'down') {
+                    snake.direction = 'up';
+                }
+
+                break;
+            case 39:
+                if (snake.direction != 'left') {
+                    snake.direction = 'right';
+                }
+
+                break;
+            case 40:
+                if (snake.direction != 'up') {
+                    snake.direction = 'down';
+                }
+                break;
+        }
+
+    })
+
+
+    function autoMove() {//让蛇自动移动
+        snake.timmer = setInterval(function() {
+            move(snake.direction);
+        }, 300)
+    }
+
+
+    function randomXY(arryRoad) {//随机函数
+        var x = parseInt(Math.random() * arryRoad.length);
+        return arryRoad[x];
+    }
+
+    function food() {//食物函数
+        var num = randomXY(arryRoad);
+        $('#demo').children().eq(num).removeClass('in');
+        $('#demo').children().eq(num).addClass('food');
+    }
+
+
+    function init() {
+        for (var i = 0; i < arrSnake.length; i++) {
+            $('#demo').children().eq(arrSnake[i]).removeClass('in');
+            $('#demo').children().eq(arrSnake[i]).addClass('snake');
+        }
+        arryRoad.splice(0, arrSnake.length+1);
+
+        food();//生成食物
+
+        autoMove();//蛇动
+
+    }
+
+
+    init();
+
+   
+    </script>
 </html>
